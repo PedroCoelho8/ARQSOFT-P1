@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="JpaBuddyIdeaProjectConfig" ddlActionDbType="h2">
+    <option name="defaultUnitInitialized" value="true" />
+    <option name="renamerInitialized" value="true" />
+    <option name="isSnapshotDb" value="false" />
+    <option name="snapshotDbValue" value="e28df022-f867-43d5-8144-f337a9cc2784" />
+    <option name="snapshotModelValue" value="Default" />
+    <option name="reverseEngineeringLastDbConnectionId" value="e28df022-f867-43d5-8144-f337a9cc2784" />
+  </component>
+</project>

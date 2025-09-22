@@ -1,0 +1,65 @@
+@startuml
+autonumber
+
+actor "User" as user
+
+participant "RecommendationController\n: RecommendationController" as Controller
+participant "RecommendationService\n: RecommendationServiceImpl" as Service
+participant "AlRecommendation\n: AlRecommendation" as Algorithm
+
+participant "RecAlgByAge\n: AlRecommendationByAge" as AgeAlg
+participant "TopLentAlg\n: AlRecommendationMostLentBook" as TopLentAlg
+
+participant "BookRepository" as BookRepo
+participant "GenreRepository" as GenreRepo
+participant "ReaderRepository" as ReaderRepo
+
+user -> Controller: Selects the recommendations algorithm
+
+Controller -> Service: GET /api/recommendations/{readerNumber}
+activate Service
+
+Service -> Algorithm: getLendingRecommendations(readerNumber)
+alt Algoritmo configurado = "RecAlgByAge"
+    Algorithm -> AgeAlg: getLendingRecommendations(readerNumber)
+    activate AgeAlg
+
+    AgeAlg -> ReaderRepo: findByUserId(readerNumber)
+    ReaderRepo --> AgeAlg: ReaderDetails
+
+    alt Idade <= minAge
+        AgeAlg -> BookRepo: findTopLentBooksByGenre("Infantil", limit)
+        BookRepo --> AgeAlg: Lista de livros recomendados
+    else minAge < Idade < maxAge
+        AgeAlg -> BookRepo: findTopLentBooksByGenre("Thriller", limit)
+        BookRepo --> AgeAlg: Lista de livros recomendados
+    else Idade >= maxAge
+        AgeAlg -> GenreRepo: findTopGenresByLendCount(1)
+        GenreRepo --> AgeAlg: Top genre
+        AgeAlg -> BookRepo: findTopLentBooksByGenre(Top genre, limit)
+        BookRepo --> AgeAlg: Lista de livros recomendados
+    end
+
+    AgeAlg --> Service: Lista de livros recomendados
+    deactivate AgeAlg
+else Algoritmo configurado = "TopLentAlg"
+    Algorithm -> TopLentAlg: getLendingRecommendations(readerNumber)
+    activate TopLentAlg
+
+    TopLentAlg -> GenreRepo: findTopGenresByLendCount(yMostLentGenre)
+    GenreRepo --> TopLentAlg: Lista dos gêneros mais emprestados
+
+    loop Para cada gênero em Lista dos gêneros mais emprestados
+        TopLentAlg -> BookRepo: findTopLentBooksByGenre(gênero, xBooksMostLent)
+        BookRepo --> TopLentAlg: Lista de livros recomendados
+    end
+
+    TopLentAlg --> Service: Lista de livros recomendados
+    deactivate TopLentAlg
+end
+
+Service --> Controller: Lista de livros recomendados
+deactivate Service
+Controller --> user: Exibe lista de recomendações
+
+@enduml
